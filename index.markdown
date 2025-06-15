@@ -1,6 +1,6 @@
 ---
 layout: home
-title: Your Name
+title: Joao Jeronimo
 ---
 
 <div class="profile-container">

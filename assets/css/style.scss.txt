@@ -22,3 +22,22 @@
   text-decoration: none;
   border-radius: 5px;
 }
+
+.profile-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* Adds space between image and text */
+  margin: 2rem 0;
+}
+
+.profile-img {
+  width: 120px;      /* Adjust size as needed */
+  height: 120px;     /* Adjust size as needed */
+  object-fit: cover;
+  border-radius: 50%;
+  margin-right: 0;   /* No extra margin needed with gap */
+}
+
+.profile-text {
+  flex: 1;
+}

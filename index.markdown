@@ -1,10 +1,12 @@
 ---
 layout: home
-title: Joao Jeronimo
+title: Your Name
 ---
 
-<div class="profile">
+<div class="profile-container">
   <img src="/assets/images/me.jpg" alt="Joao Jeronimo" class="profile-img">
-  <h1>Joao Jeronimo</h1>
-  <p>Welcome to my personal website!</p>
+  <div class="profile-text">
+    <h1>Joao Jeronimo</h1>
+    <p>Welcome to my personal website!</p>
+  </div>
 </div>

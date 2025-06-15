@@ -1,0 +1,24 @@
+---
+---
+@import "{{ site.theme }}";
+
+.profile {
+  text-align: center;
+  padding: 2rem;
+}
+
+.profile-img {
+  width: 200px;
+  border-radius: 50%;
+  margin: 1rem auto;
+}
+
+.nav-button {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 5px;
+  background: #2c3e50;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}

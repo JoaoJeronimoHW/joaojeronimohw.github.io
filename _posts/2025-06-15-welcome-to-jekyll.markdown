@@ -15,7 +15,7 @@ Where:
 - **L*** = Trend labour input (population × participation × hours)  
 - **PROD*** = Trend productivity (HP-filtered output/hour)
 
-This approach, detailed in the SFC's [2018 Technical Report](https://www.fiscalcommission.scot), combines demographic projections with cyclical adjustments using Hodrick-Prescott (HP) filters. While robust for identifying long-term trends, this methodology faces challenges capturing real-time labour market dynamics and non-linear productivity shocks.
+This approach, as detailed in the SFC's [2018 Technical Report](https://www.fiscalcommission.scot), combines demographic projections with cyclical adjustments using Hodrick-Prescott (HP) filters. While robust for identifying long-term trends, this methodology faces challenges capturing real-time labour market dynamics and non-linear productivity shocks.
 
 ---
 

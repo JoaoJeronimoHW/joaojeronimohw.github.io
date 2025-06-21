@@ -6,16 +6,9 @@ categories: jekyll update
 ---
 ## 1. The SFC's Core Methodology: A Structural Foundation
 
-The Scottish Fiscal Commission (SFC) anchors its forecasts in a **production function framework**:
+The Scottish Fiscal Commission (SFC), an independent institution responsible for economic and fiscal forecasting to accompany the Scottish Government’s Budget cycle, published a technical [report](https://fiscalcommission.scot/wp-content/uploads/2021/05/How-we-forecast-the-Scottish-Economy-May-2021.pdf) on May 2021 describing their operational motivation, methodology and underlying assumptions. The report establishes the process behind the forecasting of trend GDP – defined as the maximum amount of goods and services the economy can sustainably produce – and presents a decomposition mechanism that breaks this task into several, smaller forecasting and/or calibration exercises: namely, a list of endogenous variables comprising the unemployment rate gap, private-sector real hourly wage and household consumption. In this blog post, I want to focus on the stochastic process – an error correction model - governing private-sector real hourly wages and illustrate how two key changes might help improve the accuracy of the forecast, in a way that helps the SFC to better serve their mandate. First, following [Pissarides (2010)](https://cep.lse.ac.uk/pubs/download/dp0839.pdf) I propose the distinction between new hire and incumbent private sector real wages. While the distinction made in the report between public and private sector real wages speaks to an important structural characteristic of the economy, wages for new hires are considerably more procyclical than average wages. Hence, the underlying assumption that new hires represent rigid labour costs can be a limitation for the short-term component of the ECM [(Schaefer and Singleton, 2017)](https://www.econstor.eu/bitstream/10419/173042/1/cesifo1_wp6766.pdf). Second, I illustrate how some modern forecasting methods leveraging machine learning can outperform traditional econometric models – e.g. ARIMA – when working with short panels, which are prevalent in macroeconomic data. I illustrate the quantitative impact of each of these changes separately, using simulated data in Python, using `tensorflow`, `numpy`, `pandas` and `sklearn`.
 
-Y* = L* × PROD*
 
-Where:
-- **Y*** = Potential GDP  
-- **L*** = Trend labour input (population × participation × hours)  
-- **PROD*** = Trend productivity (HP-filtered output/hour)
-
-This approach, as detailed in the SFC's [2018 Technical Report](https://www.fiscalcommission.scot), combines demographic projections with cyclical adjustments using Hodrick-Prescott (HP) filters. While robust for identifying long-term trends, this methodology faces challenges capturing real-time labour market dynamics and non-linear productivity shocks.
 
 ---
 

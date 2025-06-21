@@ -41,3 +41,8 @@
 .profile-text {
   flex: 1;
 }
+
+.post-content {
+  text-align: justify;
+}
+

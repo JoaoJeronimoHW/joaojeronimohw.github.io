@@ -121,45 +121,124 @@ It's important to note that this proposed improvement does not live in the vacuu
 
 # 3. Machine Learning & ARIMA: A Complementary Toolkit
 
-### ARIMA's Limitations in Small Samples
-The SFC's annual data (n≈20) strains traditional ARIMA:
-- **Overfitting risk**: 4+ parameters vs theoretical limit √20≈4.5  
-- **HP filter oversmoothing**: λ=1600 masks structural breaks
+The ARIMA framework remains foundational in time-series forecasting due to its mathematical rigor and interpretability, particularly for linear trends and seasonal patterns. Its strength lies in modeling stationary data through differencing and leveraging autocorrelation structures via autoregressive (AR) and moving-average (MA) components. However, ARIMA struggles with non-linear dynamics, missing data, and high volatility, often requiring manual parameter tuning. These limitations become acute in complex domains like financial markets, where data exhibits erratic shifts.
 
-### LSTM Neural Networks: Capturing Non-Linear Dynamics
-**Example: Productivity Forecasting**
+LSTM networks surpass ARIMA in capturing non-linear dependencies and long-range temporal patterns through recurrent gates and memory cells. They excel in volatile contexts (e.g., stock prices or epidemic curves) by autonomously learning features without rigid statistical assumptions. For instance, LSTMs reduce forecasting errors by 84–87% in finance compared to ARIMA [(Åkesson and Holm, 2024)](https://kth.diva-portal.org/smash/get/diva2:1942061/FULLTEXT01.pdf). However, they require larger computational resources and risk overfitting in small samples.
+
+In this section, I use five models to forecast productivity, in line with the SFC's core trend GDP forecasting methodology:
 
 {% highlight ruby %}
+from statsmodels.tsa.filters.hp_filter import hpfilter
+
+# Compute trend components using HP filter (lambda=1600 for annual data)
+def calculate_potential_gdp(df):
+    # 1. Trend productivity (HP filter)
+    _, prod_trend = hpfilter(df['productivity'], lamb=1600)
+    df['prod_trend'] = prod_trend
+    
+    # 2. Trend total hours (HP filter) 
+    _, hours_trend = hpfilter(df['total_hours'], lamb=1600)
+    df['hours_trend'] = hours_trend
+    
+    # 3. Potential GDP = Trend productivity * Trend hours
+    df['potential_gdp'] = df['prod_trend'] * df['hours_trend']
+    
+    return df
+
+# Apply to your DataFrame
+df = calculate_potential_gdp(df)
+{% endhighlight %}
+
+I build on [Taslim and Murwantara (2023)](https://beei.org/index.php/EEI/article/view/6034/3730) and define simple ARIMA(1,1,1) and LSTM network productivity forecasting models. I also define an ARIMA(0,1,1) and, in the same vein, a regularized LSTM to avoid overparameterization and, therefore, better adjust to small sample sizes. Finally, I define a hybrid model where I use LSTM to generate the base forecast, and ARIMA(0,0,1) to model residuals, such that the final forecast consists of an LSTM output and ARIMA residual correction. The functions leverage `statsmodels`, `sklearn` and `tensorflow` libraries:
+
+{% highlight ruby %}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from statsmodels.tsa.filters.hp_filter import hpfilter
+from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
+from statsmodels.tsa.arima.model import ARIMA
+from sklearn.metrics import mean_squared_error
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.regularizers import l2
 
-model = Sequential([
-LSTM(50, activation='relu', input_shape=(3, 1)),
-Dense(1)
-])
-model.compile(optimizer='adam', loss='mse')
+def prepare_forecast_data(series, n_steps=3):
+    scaler = MinMaxScaler()
+    scaled = scaler.fit_transform(series.values.reshape(-1,1))
+    X, y = [], []
+    for i in range(len(scaled)-n_steps):
+        X.append(scaled[i:i+n_steps])
+        y.append(scaled[i+n_steps])
+    return np.array(X), np.array(y), scaler
+
+def arima_forecast(data):
+    # Base ARIMA (1,1,1) with AICc correction [4][8]
+    model = ARIMA(data, order=(1,1,1))
+    results = model.fit()
+    aicc = results.aic + (2*3*(3+1))/(len(data)-3-1)  # AICc formula [4]
+    forecast = results.get_forecast(steps=len(data)-3)
+    return forecast.predicted_mean
+
+def corrected_arima(data):
+    # Simplified ARIMA (0,1,1) for small samples [4][7]
+    model = ARIMA(data, order=(0,1,1))
+    results = model.fit()
+    return results.fittedvalues[1:]
+
+def lstm_forecast(data):
+    # Original LSTM
+    X, y, scaler = prepare_forecast_data(data)
+    model = Sequential([
+        LSTM(16, activation='relu', input_shape=(X.shape[1], 1)),
+        Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mse')
+    model.fit(X, y, epochs=100, verbose=0)
+    return scaler.inverse_transform(model.predict(X)).flatten()
+
+def corrected_lstm(data):
+    # Regularized LSTM for small samples [3][9]
+    X, y, scaler = prepare_forecast_data(data)
+    model = Sequential([
+        LSTM(8, activation='relu', input_shape=(X.shape[1], 1), 
+             kernel_regularizer=l2(0.01)),
+        Dropout(0.2),
+        Dense(1)
+    ])
+    model.compile(optimizer='adam', loss='mse')
+    model.fit(X, y, epochs=50, batch_size=2, verbose=0)
+    return scaler.inverse_transform(model.predict(X)).flatten()
+
+def hybrid_forecast(data):
+    # LSTM base forecast
+    lstm_pred = lstm_forecast(data)
+    
+    # ARIMA on residuals
+    residuals = data[lookback:] - lstm_pred
+    arima_res = ARIMA(residuals, order=(0,0,1)).fit()
+    correction = arima_res.fittedvalues
+    
+    return lstm_pred + correction
+
+arima_pred = arima_forecast(df['productivity'])
+corr_arima_pred = corrected_arima(df['productivity'])
+lstm_pred = lstm_forecast(df['productivity'])
+corr_lstm_pred = corrected_lstm(df['productivity'])
+hybrid_pred = hybrid_forecast(df['productivity'])
 {% endhighlight %}
 
-You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
+The forecasting results are in line with the literature, in that they suggest:
 
-Jekyll requires blog post files to be named according to the following format:
+- Regularization improves performance: corrected LSTM (with dropout/L2) outperforms base LSTM by 68.8% RMSE reduction [(Sastry et al, 2025)](https://openreview.net/pdf?id=uDRzORdPT7).
+- Hybrid approach effectiveness: ARIMA-LSTM architectures leverage linear trend capture (ARIMA) and nonlinear residual modeling (LSTM), reducing errors in comparison to standalone models [(Hamiane et al, 2024)](https://www.iieta.org/journals/isi/paper/10.18280/isi.290306).
+- Small-sample adaptations: Both ARIMA and LSTM corrections significantly outperform base versions.
 
-`YEAR-MONTH-DAY-title.MARKUP`
+![Alt text for accessibility](/assets/images/models.jpg)
 
-Where `YEAR` is a four-digit number, `MONTH` and `DAY` are both two-digit numbers, and `MARKUP` is the file extension representing the format used in the file. After that, include the necessary front matter. Take a look at the source for this post to get an idea about how it works.
+![Alt text for accessibility](/assets/images/rmse.jpg)
 
-Jekyll also offers powerful support for code snippets:
+---
 
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
-{% endhighlight %}
-
-Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
-
-[jekyll-docs]: https://jekyllrb.com/docs/home
-[jekyll-gh]:   https://github.com/jekyll/jekyll
-[jekyll-talk]: https://talk.jekyllrb.com/
+# Concluding remarks

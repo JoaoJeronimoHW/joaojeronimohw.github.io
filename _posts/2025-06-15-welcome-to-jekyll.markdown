@@ -242,3 +242,10 @@ The forecasting results are in line with the literature, in that they suggest:
 ---
 
 # Concluding remarks
+
+The integration of new hire wage data into economic forecasting models presents a significant opportunity to enhance the accuracy and responsiveness of labor market analysis. Unlike average wages, new hire wages are markedly more procyclical, providing a sharper, real-time indicator of labor market turning points and productivity fluctuations. This responsiveness allows policymakers to better anticipate economic shifts and implement timely interventions, as new hire wages more accurately reflect marginal labor costs and adjust rapidly to evolving economic conditions. By capturing these dynamics, forecasts become more attuned to short-term cycles and can support more effective fiscal planning, directly benefiting the Scottish Fiscal Commission’s (SFC) mandate to provide robust, forward-looking economic guidance.
+
+Equally promising is the adoption of advanced machine learning techniques, such as LSTM networks and hybrid ARIMA-LSTM models, which have demonstrated substantial improvements in forecasting accuracy - especially in the context of non-linear, volatile, or small-sample macroeconomic data. These methods can uncover complex temporal patterns and adapt to structural changes that traditional models may miss, further strengthening the empirical foundation of economic projections. The pace of methodological innovation in both theory and applied econometrics is accelerating, making it a great era for economic forecasters and policymakers alike. Staying abreast of these advancements is not only exciting but essential for ensuring that policy decisions are grounded in the best available evidence, thereby enhancing the SFC’s ability to fulfill its mandate in a rapidly changing economic landscape.
+
+
+

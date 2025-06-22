@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Enhancing Economic Forecasting: New Hire Wages, Machine Learning, and the Scottish Fiscal Commission's Mandate"
-date:   22-06-2025 12:25:44 +0100
+date:   15-06-2025 12:25:44 +0100
 categories: jekyll update
 ---
 # 1. The SFC's Core Methodology: A Structural Foundation

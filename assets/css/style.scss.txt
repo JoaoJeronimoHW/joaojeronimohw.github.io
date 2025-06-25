@@ -1,16 +1,11 @@
 ---
 ---
+
 @import "{{ site.theme }}";
 
 .profile {
   text-align: center;
   padding: 2rem;
-}
-
-.profile-img {
-  width: 200px;
-  border-radius: 50%;
-  margin: 1rem auto;
 }
 
 .nav-button {
@@ -25,21 +20,21 @@
 
 .profile-container {
   display: flex;
-  align-items: center;
-  gap: 2rem; /* Adds space between image and text */
+  align-items: flex-start; /* Align items at the top */
+  gap: 2rem;
   margin: 2rem 0;
 }
 
 .profile-img {
-  width: 120px;      /* Adjust size as needed */
-  height: 120px;     /* Adjust size as needed */
+  width: 140px;
+  height: 140px;
   object-fit: cover;
   border-radius: 50%;
-  margin-right: 0;   /* No extra margin needed with gap */
+  flex-shrink: 0; /* Prevent image from shrinking */
 }
 
 .profile-text {
-  flex: 1;
+  flex: 1; /* Take up the remaining space */
 }
 
 .post-content {

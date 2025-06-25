@@ -29,8 +29,11 @@ github_username:  JoaoJeronimoHW
 
 # Build settings
 theme: minima
+sass:
+  style: compressed
 plugins:
   - jekyll-feed
+  - jekyll-sass-converter
 
 # Exclude from processing.
 # The following items will not be processed, by default.

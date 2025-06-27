@@ -133,7 +133,7 @@ In this section, I use five models to forecast productivity, in line with the SF
 {% highlight ruby %}
 from statsmodels.tsa.filters.hp_filter import hpfilter
 
-# Compute trend components using HP filter (lambda=1600 for annual data)
+# Computing trend components using HP filter (lambda=1600 for annual data)
 def calculate_potential_gdp(df):
     # 1. Trend productivity (HP filter)
     _, prod_trend = hpfilter(df['productivity'], lamb=1600)
@@ -177,15 +177,15 @@ def prepare_forecast_data(series, n_steps=3):
     return np.array(X), np.array(y), scaler
 
 def arima_forecast(data):
-    # Base ARIMA (1,1,1) with AICc correction [4][8]
+    # Base ARIMA (1,1,1) with AICc correction 
     model = ARIMA(data, order=(1,1,1))
     results = model.fit()
-    aicc = results.aic + (2*3*(3+1))/(len(data)-3-1)  # AICc formula [4]
+    aicc = results.aic + (2*3*(3+1))/(len(data)-3-1)  # AICc formula 
     forecast = results.get_forecast(steps=len(data)-3)
     return forecast.predicted_mean
 
 def corrected_arima(data):
-    # Simplified ARIMA (0,1,1) for small samples [4][7]
+    # Simplified ARIMA (0,1,1) for small samples
     model = ARIMA(data, order=(0,1,1))
     results = model.fit()
     return results.fittedvalues[1:]
@@ -202,7 +202,7 @@ def lstm_forecast(data):
     return scaler.inverse_transform(model.predict(X)).flatten()
 
 def corrected_lstm(data):
-    # Regularized LSTM for small samples [3][9]
+    # Regularized LSTM for small samples
     X, y, scaler = prepare_forecast_data(data)
     model = Sequential([
         LSTM(8, activation='relu', input_shape=(X.shape[1], 1), 

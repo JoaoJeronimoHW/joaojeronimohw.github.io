@@ -148,7 +148,6 @@ def calculate_potential_gdp(df):
     
     return df
 
-# Apply to your DataFrame
 df = calculate_potential_gdp(df)
 {% endhighlight %}
 

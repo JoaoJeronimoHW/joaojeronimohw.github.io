@@ -116,11 +116,15 @@ tabstat sel_freq, by(predictor) statistics(mean) nototal
 ```
 predictor |  sel_freq
 ----------+----------
-        1 |    [FREQ]
-        2 |    [FREQ]
-        3 |    [FREQ]
+       11 |    100%
+       27 |    100%
+        3 |    100%
        ...
-       30 |    [FREQ]
+       21 |     80%
+        2 |     70%
+       10 |     70%
+       19 |     60%
+       30 |     0%
 ```
 
 *Replace with your Stata tabstat output. The three most stably selected predictors — those with sel_freq closest to 1.0 — correspond to the variables with the largest true coefficients in the data-generating process. The instability concentrates among weak-signal and collinear predictors.*

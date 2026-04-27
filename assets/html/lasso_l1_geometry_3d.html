@@ -1,6 +1,30 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive 3D LASSO Geometry</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#070a14;font-family:'Consolas','Courier New',monospace;}
+:root{
+  --border-radius-lg:12px;
+  --font-mono:'Consolas','Courier New',monospace;
+  --color-background-secondary:#0d1225;
+  --color-border-tertiary:rgba(80,110,230,0.2);
+  --color-text-secondary:#8899cc;
+  --color-text-primary:#dde4ff;
+  --color-text-info:#4499ff;
+  --color-text-success:#44ff88;
+  --color-text-danger:#ff5566;
+  --color-text-warning:#ffcc44;
+}
+</style>
+</head>
+<body>
 <h2 class="sr-only">Interactive 3D LASSO geometry: prediction ellipsoids centred on the OLS solution expand until they touch the L1 constraint ball, determining coefficient selection</h2>
 <style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 #vr{position:relative;border-radius:var(--border-radius-lg);overflow:hidden;background:#070a14;}
 #cv{display:block;width:680px;height:430px;cursor:grab;}
 #cv.dr{cursor:grabbing;}
@@ -241,3 +265,5 @@ window.sp=function(i){
 upd();
 })();
 </script>
+</body>
+</html>

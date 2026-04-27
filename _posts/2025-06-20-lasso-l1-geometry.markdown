@@ -23,7 +23,7 @@ These are not just different goals. They lead to different estimators, different
 
 The paper's Figure 2 is the empirical demonstration. Take a cross-sectional dataset of workers with log wages and 30+ predictors. Split the data into 10 random partitions. Fit LASSO on each partition with a fixed regularisation parameter. Record which variables get selected. Then ask: how stable is the selection across partitions, compared to how stable is out-of-sample R²?
 
-The answer is striking. Out-of-sample R² barely moves. The selection matrix is almost unrecognisable from one partition to the next.
+The answer is interesting. Out-of-sample R² barely moves. The selection matrix is almost unrecognisable from one partition to the next.
 
 Here is what that looks like when you build it in Stata.
 

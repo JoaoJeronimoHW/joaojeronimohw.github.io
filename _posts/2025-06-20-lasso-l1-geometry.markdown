@@ -51,8 +51,6 @@ tabstat oos_r2 oos_rmse, statistics(mean sd min max) columns(statistics)
   oos_rmse |     0.3558     0.0119   0.3352    0.3753
 ```
 
-*Replace the bracketed values with your Stata tabstat output.*
-
 OOS RMSE — the scale-interpretable error in log-wage units — has a coefficient of variation of roughly 8% across partitions. The model predicts with essentially the same absolute accuracy everywhere. OOS R² is more variable (CV ≈ 48%), but that is almost entirely because the held-out outcome variance fluctuates across 50-observation partitions, not because predictive performance is genuinely unstable. The prediction surface is stable. The selection surface is not.
 
 This is the result Mullainathan and Spiess wanted you to see. **Predictive stability and coefficient stability are completely different objects.**
@@ -127,7 +125,7 @@ predictor |  sel_freq
        30 |     0%
 ```
 
-*Replace with your Stata tabstat output. The three most stably selected predictors — those with sel_freq closest to 1.0 — correspond to the variables with the largest true coefficients in the data-generating process. The instability concentrates among weak-signal and collinear predictors.*
+Predictors with sel_freq closest to 100% correspond to the variables with the largest true coefficients in the data-generating process. The instability concentrates among weak-signal and collinear predictors.
 
 The picture that emerges: a handful of predictors are robustly selected across partitions. Most are not. And OOS RMSE, the scale-interpretable error metric, barely moves regardless of which set of predictors was chosen.
 

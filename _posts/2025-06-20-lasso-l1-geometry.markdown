@@ -147,7 +147,7 @@ More concretely:
 - If you had run the same analysis on a different random sample, LASSO might have selected x2 instead. Your causal estimate would be different, not because the data-generating process changed, but because the L1 geometry tipped the other way.
 - The OOS R² would look nearly identical in both cases. The prediction metrics give you no warning that the causal model has changed.
 
-This is what the paper means when it says that ML algorithms are built for ŷ, not for β. The stability guarantee that ML tools provide — good generalisation, stable out-of-sample performance — is genuinely valuable. It just does not extend to the question of which variables matter causally.
+This is what the paper means when it says that ML algorithms are built for ŷ, not for β. The stability guarantee that ML tools provide — good generalisation, stable out-of-sample performance — is valuable. It just does not extend to the question of which variables matter causally.
 
 ---
 
@@ -163,7 +163,7 @@ Let me close with four concrete takeaways, particularly for practitioners coming
 
 **4. The instability is not a bug you can fix by tuning λ more carefully.** It is a structural property of the L1 objective. As the dataset grows, LASSO converges to the correct support only if the irrepresentable condition holds — which is precisely the condition that fails when predictors are correlated, which is almost always.
 
-The Mullainathan and Spiess paper is worth reading in full. But the empirical demonstration in Figure 2, which I reconstructed here in Stata, is the part that has stayed with me. Watching the selection heatmap shift dramatically across partitions while the RMSE barely moves is one of those moments where a theoretical result becomes viscerally obvious. I hope the 3D visualisation makes it a little more visceral still.
+The Mullainathan and Spiess paper is worth reading in full. But the empirical demonstration in Figure 2, which I reconstructed here in Stata, is the part that has stayed with me. I have always found it easier to understand difficult technical concepts when I can give them some sort of geometric interpretation and visualise what that function is doing to that input, be it a random variable, a function, some vector space or other objects. And this was one of those situations where it was, for me, especially helpful.
 
 ---
 

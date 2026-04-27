@@ -1,0 +1,243 @@
+
+<h2 class="sr-only">Interactive 3D LASSO geometry: prediction ellipsoids centred on the OLS solution expand until they touch the L1 constraint ball, determining coefficient selection</h2>
+<style>
+#vr{position:relative;border-radius:var(--border-radius-lg);overflow:hidden;background:#070a14;}
+#cv{display:block;width:680px;height:430px;cursor:grab;}
+#cv.dr{cursor:grabbing;}
+.ib{position:absolute;top:10px;left:10px;background:rgba(5,8,20,0.88);border:0.5px solid rgba(80,110,230,0.25);border-radius:8px;padding:9px 12px;font-size:12px;font-family:var(--font-mono);color:var(--color-text-secondary);line-height:1.65;pointer-events:none;min-width:196px;}
+.lb{position:absolute;top:10px;right:10px;background:rgba(5,8,20,0.88);border:0.5px solid rgba(80,110,230,0.2);border-radius:8px;padding:9px 12px;font-size:11px;font-family:var(--font-mono);color:var(--color-text-secondary);line-height:1.9;pointer-events:none;}
+.li{display:flex;align-items:center;gap:7px;}
+.cp{background:var(--color-background-secondary);border-top:0.5px solid var(--color-border-tertiary);padding:12px 16px 14px;}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:7px 16px;margin-bottom:9px;}
+.sg2{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px;margin-bottom:10px;}
+.sl{font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono);display:flex;flex-direction:column;gap:3px;}
+.sl span{color:var(--color-text-primary);font-weight:500;}
+.sl input{width:100%;}
+.pb{display:flex;gap:7px;flex-wrap:wrap;}
+.pb button{font-size:11px;padding:4px 9px;border-radius:4px;background:transparent;cursor:pointer;font-family:var(--font-mono);border:0.5px solid;}
+</style>
+<div id="vr">
+<canvas id="cv"></canvas>
+<div class="ib">
+<div style="font-size:10px;color:rgba(100,130,255,0.6);letter-spacing:.05em;margin-bottom:5px;">SOLUTION INFO</div>
+<div id="ot"></div>
+<div id="lt"></div>
+<div style="margin-top:6px;padding-top:6px;border-top:.5px solid rgba(255,255,255,.07);">
+<div id="st"></div>
+<div id="rt"></div>
+</div>
+</div>
+<div class="lb">
+<div class="li"><span style="width:16px;height:2px;background:#ffcc00;border-radius:1px;"></span>Tangent ellipsoid</div>
+<div class="li"><span style="width:16px;height:2px;background:#cc6633;border-radius:1px;opacity:.85;"></span>Inner ellipsoids</div>
+<div class="li"><span style="width:16px;height:2px;background:#4477ff;border-radius:1px;opacity:.85;"></span>L1 constraint ball</div>
+<div class="li"><span style="width:9px;height:9px;background:#fff;border-radius:50%;"></span>OLS β*</div>
+<div class="li"><span style="width:9px;height:9px;background:#44ff88;border-radius:50%;"></span>LASSO β̂</div>
+</div>
+<div class="cp">
+<div class="sg">
+<label class="sl">β₁* = <span id="vb1">1.45</span><input type="range" id="sb1" min="-2.5" max="2.5" step="0.05" value="1.45"></label>
+<label class="sl">β₂* = <span id="vb2">1.42</span><input type="range" id="sb2" min="-2.5" max="2.5" step="0.05" value="1.42"></label>
+<label class="sl">β₃* = <span id="vb3">0.12</span><input type="range" id="sb3" min="-2.5" max="2.5" step="0.05" value="0.12"></label>
+</div>
+<div class="sg2">
+<label class="sl">λ (L1 ball radius) = <span id="vlam" style="color:var(--color-text-info);">1.00</span><input type="range" id="slam" min="0.1" max="2.5" step="0.05" value="1.0"></label>
+<label class="sl">ρ (corr β₁–β₂) = <span id="vrho" style="color:var(--color-text-success);">0.00</span><input type="range" id="srho" min="-0.85" max="0.85" step="0.05" value="0.0"></label>
+</div>
+<div class="pb">
+<button onclick="sp(0)" style="border-color:rgba(255,80,80,.35);color:var(--color-text-danger);">Near tipping point</button>
+<button onclick="sp(1)" style="border-color:rgba(80,200,80,.35);color:var(--color-text-success);">3 predictors (stable)</button>
+<button onclick="sp(2)" style="border-color:rgba(255,180,50,.35);color:var(--color-text-warning);">Single predictor</button>
+<button onclick="sp(3)" style="border-color:var(--color-border-tertiary);color:var(--color-text-secondary);">OLS inside ball</button>
+</div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const cv=document.getElementById('cv');
+const W=680,H=430;
+const ren=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+ren.setSize(W,H);
+ren.setPixelRatio(Math.min(devicePixelRatio,2));
+ren.setClearColor(0x070a14,1);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(42,W/H,.01,50);
+let sph={th:.82,ph:1.08,r:7.8};
+function ucam(){
+  const{th,ph,r}=sph;
+  cam.position.set(r*Math.sin(ph)*Math.sin(th),r*Math.cos(ph),r*Math.sin(ph)*Math.cos(th));
+  cam.lookAt(0,0,0);
+}
+ucam();
+scene.add(new THREE.AmbientLight(0xffffff,.65));
+const d1=new THREE.DirectionalLight(0xffffff,.5);d1.position.set(4,6,3);scene.add(d1);
+const d2=new THREE.DirectionalLight(0x8899ff,.25);d2.position.set(-3,-4,-2);scene.add(d2);
+let drag=false,pm={x:0,y:0};
+cv.addEventListener('mousedown',e=>{drag=true;pm={x:e.clientX,y:e.clientY};cv.classList.add('dr');});
+cv.addEventListener('touchstart',e=>{drag=true;pm={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+function mv(cx,cy){
+  if(!drag)return;
+  sph.th-=(cx-pm.x)*.007;
+  sph.ph=Math.max(.12,Math.min(Math.PI-.12,sph.ph+(cy-pm.y)*.007));
+  pm={x:cx,y:cy};ucam();
+}
+cv.addEventListener('mousemove',e=>mv(e.clientX,e.clientY));
+cv.addEventListener('touchmove',e=>mv(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+const ed=()=>{drag=false;cv.classList.remove('dr');};
+cv.addEventListener('mouseup',ed);cv.addEventListener('mouseleave',ed);cv.addEventListener('touchend',ed);
+cv.addEventListener('wheel',e=>{sph.r=Math.max(3,Math.min(14,sph.r+e.deltaY*.008));ucam();e.preventDefault();},{passive:false});
+const AX=2.2;
+[[AX,0,0,0xff4444],[0,AX,0,0x44ff88],[0,0,AX,0x5599ff]].forEach(([x,y,z,c])=>{
+  const g=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(x,y,z)]);
+  scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:c,opacity:.28,transparent:true})));
+});
+function mkSpr(txt,hex){
+  const c=document.createElement('canvas');c.width=72;c.height=72;
+  const ctx=c.getContext('2d');ctx.font='bold 32px Arial';ctx.fillStyle=hex;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,36,36);
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));
+  spr.scale.set(.34,.34,1);return spr;
+}
+[['β₁',[AX+.24,0,0],'#ff6666'],['β₂',[0,AX+.24,0],'#66ffaa'],['β₃',[0,0,AX+.24],'#6699ff']].forEach(([t,p,c])=>{
+  const s=mkSpr(t,c);s.position.set(...p);scene.add(s);
+});
+scene.add(Object.assign(new THREE.Mesh(new THREE.SphereGeometry(.042,8,4),new THREE.MeshBasicMaterial({color:0x444455}))));
+function sthr(x,t){return x>t?x-t:x<-t?x+t:0;}
+function hIS(rho){
+  const r=Math.max(-.9999,Math.min(.9999,rho));
+  const s1=1/Math.sqrt(1+r),s2=1/Math.sqrt(1-r);
+  return{a:.5*(s1+s2),b:.5*(s1-s2)};
+}
+function hMSq(v1,v2,rho){
+  const r=Math.max(-.9999,Math.min(.9999,rho));
+  const d=v1.map((x,i)=>x-v2[i]);
+  return d[0]*d[0]+2*r*d[0]*d[1]+d[1]*d[1]+d[2]*d[2];
+}
+function cd(b,rho,lam){
+  const r=Math.max(-.9999,Math.min(.9999,rho));
+  let bt=[...b];
+  for(let i=0;i<400;i++){
+    let md=0;
+    const n0=sthr(b[0]-r*(bt[1]-b[1]),lam);md=Math.max(md,Math.abs(n0-bt[0]));bt[0]=n0;
+    const n1=sthr(b[1]-r*(bt[0]-b[0]),lam);md=Math.max(md,Math.abs(n1-bt[1]));bt[1]=n1;
+    const n2=sthr(b[2],lam);md=Math.max(md,Math.abs(n2-bt[2]));bt[2]=n2;
+    if(md<1e-10)break;
+  }
+  return bt;
+}
+function lasso(b,rho,lam){
+  const l1=b.reduce((s,x)=>s+Math.abs(x),0);
+  if(l1<=lam)return[...b];
+  let lo=0,hi=l1*1.5;
+  for(let i=0;i<45;i++){
+    const mid=(lo+hi)/2;
+    const bt=cd(b,rho,mid);
+    const l=bt.reduce((s,x)=>s+Math.abs(x),0);
+    if(l>lam)lo=mid;else hi=mid;
+  }
+  return cd(b,rho,(lo+hi)/2);
+}
+const SG=new THREE.SphereGeometry(1,26,13);
+const SEG=new THREE.EdgesGeometry(new THREE.SphereGeometry(1,18,9));
+function eMesh(r,h,ctr,col,op){
+  const{a,b}=h;const[x0,y0,z0]=ctr;
+  const mat=new THREE.MeshPhongMaterial({color:col,transparent:true,opacity:op,side:THREE.DoubleSide,depthWrite:false});
+  const m=new THREE.Mesh(SG,mat);
+  m.matrix.set(a*r,b*r,0,x0,b*r,a*r,0,y0,0,0,r,z0,0,0,0,1);
+  m.matrixAutoUpdate=false;return m;
+}
+function eWire(r,h,ctr,col,op){
+  const{a,b}=h;const[x0,y0,z0]=ctr;
+  const mat=new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op});
+  const m=new THREE.LineSegments(SEG,mat);
+  m.matrix.set(a*r,b*r,0,x0,b*r,a*r,0,y0,0,0,r,z0,0,0,0,1);
+  m.matrixAutoUpdate=false;return m;
+}
+const dyn=new THREE.Group();scene.add(dyn);
+function clr(){
+  while(dyn.children.length){
+    const c=dyn.children[0];
+    if(c.material&&!Array.isArray(c.material))c.material.dispose();
+    if(c.geometry&&c.geometry!==SG&&c.geometry!==SEG)c.geometry.dispose();
+    dyn.remove(c);
+  }
+}
+let st={b:[1.45,1.42,.12],lam:1.0,rho:0.0};
+function upd(){
+  clr();
+  const{b,lam,rho}=st;
+  const rS=Math.max(-.9999,Math.min(.9999,rho));
+  const bL=lasso(b,rS,lam);
+  const h=hIS(rS);
+  const l1=b.reduce((s,x)=>s+Math.abs(x),0);
+  const ins=l1<=lam;
+  const oGeo=new THREE.OctahedronGeometry(lam,0);
+  dyn.add(new THREE.Mesh(oGeo,new THREE.MeshPhongMaterial({color:0x1f44cc,transparent:true,opacity:.055,side:THREE.DoubleSide,depthWrite:false})));
+  const oE=new THREE.EdgesGeometry(oGeo);
+  dyn.add(new THREE.LineSegments(oE,new THREE.LineBasicMaterial({color:0x4477ff,transparent:true,opacity:.58})));
+  if(!ins){
+    const rC=Math.sqrt(Math.max(hMSq(bL,b,rS),1e-8));
+    [{f:.32,fc:0x223388,fo:.032,wc:0x3355aa,wo:.17},
+     {f:.57,fc:0x553399,fo:.042,wc:0x7744cc,wo:.22},
+     {f:.78,fc:0x885533,fo:.052,wc:0xaa6644,wo:.27},
+     {f:.93,fc:0xaa6611,fo:.063,wc:0xcc8833,wo:.33},
+    ].forEach(({f,fc,fo,wc,wo})=>{
+      dyn.add(eMesh(f*rC,h,b,fc,fo));
+      dyn.add(eWire(f*rC,h,b,wc,wo));
+    });
+    dyn.add(eMesh(rC,h,b,0xddaa00,.10));
+    dyn.add(eWire(rC,h,b,0xffcc00,.82));
+    dyn.add(eMesh(rC*1.22,h,b,0x888888,.022));
+    dyn.add(eWire(rC*1.22,h,b,0x555555,.11));
+  }
+  const lG=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...b),new THREE.Vector3(...bL)]);
+  dyn.add(new THREE.Line(lG,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.38})));
+  const oM=new THREE.Mesh(new THREE.SphereGeometry(.068,16,8),new THREE.MeshPhongMaterial({color:0xffffff,emissive:0x888888,emissiveIntensity:.15}));
+  oM.position.set(...b);dyn.add(oM);
+  const lM=new THREE.Mesh(new THREE.SphereGeometry(.075,16,8),new THREE.MeshPhongMaterial({color:0x44ff88,emissive:0x226644,emissiveIntensity:.25}));
+  lM.position.set(...bL);dyn.add(lM);
+  const eps=.008;
+  const sel=[0,1,2].filter(j=>Math.abs(bL[j])>eps);
+  document.getElementById('ot').textContent='β* = ('+b.map(x=>x.toFixed(2)).join(', ')+')';
+  document.getElementById('lt').textContent='β̂ = ('+bL.map(x=>x.toFixed(3)).join(', ')+')';
+  document.getElementById('st').textContent=sel.length?'Selected: '+sel.map(j=>['β₁','β₂','β₃'][j]).join(', '):'Selected: none';
+  const RG=[
+    {t:'No selection — origin',c:'#ff5555'},
+    {t:'Corner — 1 predictor only',c:'#ff9944'},
+    {t:'Edge — 2 predictors',c:'#ffcc44'},
+    {t:'Face interior — all 3',c:'#66ff99'},
+  ];
+  const rg=ins?{t:'OLS inside L1 ball — β̂ = β*',c:'#aaaaff'}:RG[sel.length]||RG[0];
+  document.getElementById('rt').innerHTML='<span style="color:'+rg.c+'">'+rg.t+'</span>';
+}
+function bnd(sid,vid,key,idx){
+  document.getElementById(sid).addEventListener('input',function(){
+    const v=parseFloat(this.value);
+    if(idx!==undefined)st.b[idx]=v;else st[key]=v;
+    document.getElementById(vid).textContent=v.toFixed(2);
+    upd();
+  });
+}
+bnd('sb1','vb1','b',0);bnd('sb2','vb2','b',1);bnd('sb3','vb3','b',2);
+bnd('slam','vlam','lam');bnd('srho','vrho','rho');
+const PS=[
+  {b:[1.45,1.42,.12],lam:1.0,rho:.0},
+  {b:[1.9,.5,1.1],lam:1.0,rho:.0},
+  {b:[1.9,.14,.08],lam:.8,rho:.0},
+  {b:[.5,.32,.22],lam:2.0,rho:.0},
+];
+window.sp=function(i){
+  const p=PS[i];st={b:[...p.b],lam:p.lam,rho:p.rho};
+  ['b1','b2','b3'].forEach((k,j)=>{
+    document.getElementById('s'+k).value=p.b[j];
+    document.getElementById('v'+k).textContent=p.b[j].toFixed(2);
+  });
+  document.getElementById('slam').value=p.lam;document.getElementById('vlam').textContent=p.lam.toFixed(2);
+  document.getElementById('srho').value=p.rho;document.getElementById('vrho').textContent=p.rho.toFixed(2);
+  upd();
+};
+(function loop(){requestAnimationFrame(loop);ren.render(scene,cam);})();
+upd();
+})();
+</script>

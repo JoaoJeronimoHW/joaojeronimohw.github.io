@@ -19,7 +19,7 @@ The paper's opening argument is simple enough that it is easy to underestimate. 
 - **Predicting ŷ**: minimising out-of-sample prediction error.
 - **Estimating β**: recovering the causal or structural relationship between a predictor and an outcome.
 
-These are not just different goals. They lead to different estimators, different diagnostics, and — critically — different notions of what stability even means. Machine learning algorithms, LASSO included, are optimised for the first objective. They are not built for the second. This matters enormously when you try to use them for causal inference.
+These are not just different goals. They lead to different estimators, different diagnostics, and, importantly, different notions of what stability means. Machine learning algorithms, LASSO included, are optimised for the first objective. They are not built for the second. This matters when one tries to use them for causal inference.
 
 The paper's Figure 2 is the empirical demonstration. Take a cross-sectional dataset of workers with log wages and 30+ predictors. Split the data into 10 random partitions. Fit LASSO on each partition with a fixed regularisation parameter. Record which variables get selected. Then ask: how stable is the selection across partitions, compared to how stable is out-of-sample R²?
 
@@ -35,7 +35,7 @@ Here is what that looks like when you build it in Stata.
 
 *Each row is a predictor (x1–x30). Each column is one of the 10 training partitions. A filled cell means LASSO assigned a nonzero coefficient to that predictor on that partition. An empty cell means it zeroed it out.*
 
-The visual makes the point immediately. The selected variables shift substantially across columns. Some predictors appear in eight or nine partitions; others appear in two or three, or not at all. The pattern looks almost random in the sparse region of the heatmap.
+The heatmap is, I think, an intuitive illustration of this property. The selected variables shift substantially across columns. Some predictors appear in eight or nine partitions; others appear in two or three, or not at all. The pattern looks almost random in the sparse region of the heatmap.
 
 Now look at the OOS metrics for those same ten runs, reported below from Stata's `tabstat` after fitting and evaluating LASSO on each training/held-out split:
 
@@ -51,15 +51,15 @@ tabstat oos_r2 oos_rmse, statistics(mean sd min max) columns(statistics)
   oos_rmse |     0.3558     0.0119   0.3352    0.3753
 ```
 
-OOS RMSE — the scale-interpretable error in log-wage units — has a coefficient of variation of roughly 8% across partitions. The model predicts with essentially the same absolute accuracy everywhere. OOS R² is more variable (CV ≈ 48%), but that is almost entirely because the held-out outcome variance fluctuates across 50-observation partitions, not because predictive performance is genuinely unstable. The prediction surface is stable. The selection surface is not.
+OOS RMSE — the scale-interpretable error in log-wage units — has a coefficient of variation of roughly 8% across partitions. The model predicts with essentially the same absolute accuracy everywhere. OOS R² is more variable, but that is almost entirely because the held-out outcome variance fluctuates across 50-observation partitions, not because predictive performance is genuinely unstable. The prediction surface is stable. The selection surface is not.
 
-This is the result Mullainathan and Spiess wanted you to see. **Predictive stability and coefficient stability are completely different objects.**
+This is the result Mullainathan and Spiess wanted us to see. Predictive stability and coefficient stability are different objects.
 
 ---
 
 # 3. Why Does This Happen? The L1 Geometry
 
-To understand why this happens structurally — not just empirically — you need to look at what LASSO is actually doing in the parameter space.
+To understand why this happens structurally, it is very useful to look at what LASSO is actually doing in the hyperparameter space. While the analytical formulation is, in my opinion, fairly intuitive, the geometric interpretation of what the equations tell us is particularly helpful and satisfying.
 
 LASSO solves the following constrained problem:
 
@@ -67,11 +67,11 @@ $$\min_\beta \|y - X\beta\|_2^2 \quad \text{subject to} \quad \|\beta\|_1 \leq t
 
 Think of the feasible region — the set of all β satisfying the L1 constraint — as a shape in coefficient space. In two dimensions it is a diamond. In three dimensions it is an octahedron. In 30 dimensions it is a hyperdiamond with 2³⁰ corners.
 
-Now think of the loss function. The OLS solution is the unconstrained minimum. Around it, the loss surface forms concentric ellipsoids — level sets of equal prediction error. As you expand outward from the OLS solution, the first time one of these ellipsoids touches the L1 constraint region is your LASSO solution.
+Now think of the loss function. The OLS solution is the unconstrained minimum. Around it, the loss surface forms concentric ellipsoids — level sets of equal prediction error. As we expand outward from the OLS solution, the first time one of these ellipsoids touches the L1 constraint region is the LASSO solution.
 
 **The key geometric fact: the L1 ball has corners and edges, and smooth ellipsoids hitting a spiky shape almost always make contact at a corner.** At a corner, at least one coordinate is exactly zero. That is why LASSO produces exact zeros — and why Ridge, whose constraint region is a smooth sphere, almost never does.
 
-The interactive visualisation below makes this concrete. Drag to rotate in 3D, scroll to zoom, and use the sliders to move the OLS solution and adjust λ.
+I encourage you to test different calibrations in the interactive graph below. I used Claude to help me produce it in Javascript. Drag to rotate in 3D, scroll to zoom, and use the sliders to move the OLS solution and adjust λ.
 
 <div style="width:100%;margin:1.5em 0;border-radius:8px;overflow:hidden;border:0.5px solid rgba(80,110,230,0.2);">
   <iframe
@@ -86,7 +86,7 @@ The interactive visualisation below makes this concrete. Drag to rotate in 3D, s
 
 *The white sphere is the OLS solution β\*. Concentric shells expand outward as loss ellipsoids. The blue octahedron is the L1 constraint ball. The gold wireframe ellipsoid is the first to touch the ball — its contact point is the green LASSO solution β̂.*
 
-Try the **Near tipping point** preset: nudge β₁\* and β₂\* past each other using the sliders. Watch the green LASSO solution jump between two corners of the octahedron. The ellipsoid barely changes shape — prediction loss is nearly identical — but the contact point flips entirely. A completely different predictor is selected.
+You can also try the "near tipping point" preset: nudge β₁\* and β₂\* past each other using the sliders. Watch the green LASSO solution jump between two corners of the octahedron. The ellipsoid barely changes shape — prediction loss is nearly identical — but the contact point flips entirely. A completely different predictor is selected.
 
 This is exactly what the heatmap was showing statistically. When the OLS solution sits roughly equidistant from two corners of the L1 ball, a tiny change in the training data — different observations in the partition — tips the tangency from one corner to the other. Different predictor selected. Same prediction ellipsoid. Same OOS R².
 
@@ -94,7 +94,7 @@ This is exactly what the heatmap was showing statistically. When the OLS solutio
 
 # 4. The Irrepresentable Condition: When Is Selection Actually Reliable?
 
-There is a formal result that makes this precise. The *irrepresentable condition* (Zhao and Yu, 2006) states that LASSO will consistently recover the true support — the correct set of nonzero predictors — if and only if:
+There is a formal result that makes this precise. The irrepresentable condition (Zhao and Yu, 2006) states that LASSO will consistently recover the true support — the correct set of nonzero predictors — if and only if:
 
 $$\|X_{S^c}'X_S(X_S'X_S)^{-1}\operatorname{sign}(\beta_S^*)\|_\infty < 1$$
 
@@ -102,7 +102,7 @@ where S is the true support and S^c is its complement. In plain language: no exc
 
 When two predictors are highly correlated — say x1 and x2 with ρ = 0.85 in the synthetic dataset used here — the irrepresentable condition fails. The L1 penalty cannot afford to include both, so it is forced to pick one. But because both are nearly substitutable in terms of prediction loss, the choice is determined by noise-level fluctuations in the training data. x1 wins on one partition; x2 wins on another. The loss is nearly identical either way. The selected support is completely different.
 
-You can verify this directly in Stata. After fitting the ten LASSO models, run `correlate x1-x30`. The high-correlation pairs — (x1, x2), (x7, x8), (x14, x15) — never appear selected simultaneously in the same partition across all ten runs. The geometry forbids it.
+We can verify this directly in Stata. After fitting the ten LASSO models, run `correlate x1-x30`. The high-correlation pairs — (x1, x2), (x7, x8), (x14, x15) — never appear selected simultaneously in the same partition across all ten runs. The geometry forbids it.
 
 The selection frequency distribution below makes the instability quantitative:
 

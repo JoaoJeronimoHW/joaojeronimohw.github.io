@@ -5,6 +5,8 @@ date: 2026-04-27 10:00:00 +0100
 author: Joao Jeronimo
 categories: [causal inference, machine learning, regression]
 image: /assets/images/selection_heatmap.png
+redirect_from:
+  - /jekyll/update/2026/04/27/lasso-l1-geometry.html
 description: "L1 regularisation is excellent at predicting y-hat in sparse, high-dimensional problems, but it will not select the same predictors twice across partitions of the same dataset. This post reconstructs the Mullainathan and Spiess (2017) demonstration and makes the geometry of that instability visible in the hyperparameter space."
 ---
 

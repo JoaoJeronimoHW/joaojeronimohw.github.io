@@ -5,6 +5,8 @@ date: 2025-06-15 12:25:44 +0100
 author: Joao Jeronimo (Heriot-Watt University)
 categories: [forecasting, labour economics, machine learning]
 image: /assets/images/rmse.jpg
+redirect_from:
+  - /jekyll/update/2025/06/15/welcome-to-jekyll.html
 description: "The Scottish Fiscal Commission forecasts private-sector real wages with an error correction model built on average wages. I show how two changes - separating new hire from incumbent wages, and swapping ARIMA for machine learning on short panels - measurably improve forecast accuracy, with simulated evidence in Python."
 ---
 # 1. The SFC's Core Methodology: A Structural Foundation

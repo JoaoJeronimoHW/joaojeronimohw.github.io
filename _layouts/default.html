@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>{% if page.title and page.title != empty %}{{ page.title }} – {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+<meta name="description" content="{{ page.description | default: site.description | strip_newlines | truncate: 200 }}">
+<link rel="icon" type="image/jpeg" href="{{ '/assets/images/me.jpg' | relative_url }}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="{{ '/assets/css/styles.css' | relative_url }}">
+<script>
+  // Apply the stored colour scheme before first paint to avoid a flash.
+  (function () {
+    try {
+      var mode = localStorage.getItem("quarto-color-scheme");
+      if (mode === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    } catch (e) {}
+  })();
+</script>
+{% include custom-head.html %}
+{% feed_meta %}
+</head>
+
+<body class="nav-fixed {{ page.body_class | default: 'fullcontent' }}">
+
+<header id="site-header" class="fixed-top">
+  <nav class="navbar">
+    <div class="navbar-container">
+
+      <ul class="navbar-nav nav-left">
+        {% for item in site.nav %}
+        {% assign item_url = item.link | relative_url %}
+        <li class="nav-item">
+          <a class="nav-link{% if page.url == item.link %} active{% endif %}" href="{{ item_url }}">
+            <span class="menu-text">{{ item.name }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <div class="navbar-brand-container">
+        <a href="{{ '/' | relative_url }}" class="navbar-brand navbar-brand-logo">
+          <img src="{{ '/assets/images/me.jpg' | relative_url }}" alt="" class="navbar-logo">
+        </a>
+        <a class="navbar-brand" href="{{ '/' | relative_url }}">
+          <span class="navbar-title">{{ site.title }}</span>
+        </a>
+      </div>
+
+      <ul class="navbar-nav nav-right">
+        <li class="nav-item compact">
+          <a class="nav-link" href="{{ site.social.linkedin }}" aria-label="LinkedIn"><i class="bi bi-linkedin" role="img"></i></a>
+        </li>
+        <li class="nav-item compact">
+          <a class="nav-link" href="{{ site.social.github }}" aria-label="GitHub"><i class="bi bi-github" role="img"></i></a>
+        </li>
+        <li class="nav-item compact">
+          <a class="nav-link" href="mailto:{{ site.social.email }}" aria-label="Email"><i class="bi bi-envelope" role="img"></i></a>
+        </li>
+        <li class="nav-item compact navbar-tools">
+          <a class="nav-link color-scheme-toggle" href="#" role="button" aria-label="Toggle dark mode" title="Toggle dark mode"><i class="bi bi-moon icon-to-dark"></i><i class="bi bi-sun icon-to-light"></i></a>
+        </li>
+      </ul>
+
+      <button class="navbar-toggler" type="button" aria-label="Toggle navigation" aria-expanded="false">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+    </div>
+  </nav>
+</header>
+
+<div id="content" class="page-columns {{ page.page_layout | default: 'page-layout-article' }}">
+  {{ content }}
+</div>
+
+<script src="{{ '/assets/js/site.js' | relative_url }}"></script>
+</body>
+</html>

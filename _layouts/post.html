@@ -1,0 +1,24 @@
+---
+layout: default
+---
+
+<main class="content" id="document-content">
+  <header class="post-header">
+    <h1 class="title">{{ page.title }}</h1>
+    <div class="post-meta">
+      {{ page.date | date: "%B %-d, %Y" }}
+      {%- if page.author %} &middot; {{ page.author }}{% endif -%}
+    </div>
+    {%- if page.categories and page.categories.size > 0 -%}
+    <div class="listing-categories">
+      {%- for category in page.categories -%}
+      <a class="listing-category" href="{{ '/blog/' | relative_url }}#category={{ category | uri_escape }}">{{ category }}</a>
+      {%- endfor -%}
+    </div>
+    {%- endif -%}
+  </header>
+
+  <div class="post-content">
+    {{ content }}
+  </div>
+</main>

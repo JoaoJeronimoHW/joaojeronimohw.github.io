@@ -4,11 +4,11 @@ title: Research
 permalink: /research/
 ---
 
-# Publications
+## Publications
 
 J. Jerónimo, Assis Azevedo, P.C. Neves, M. Thompson (2023), Interactions between financial constraints and economic growth. The North American Journal of Economics and Finance, vol. 67, 101943.
 
-# Work in progress
+## Work in progress
 
 1. *Rent sharing under dynamic monopsony and sectoral wage floors (2025)*
 - **Abstract**: This paper investigates how exogenous productivity shocks shape the division of rents between firms and workers in imperfect labor markets, with a particular focus on the interaction between monopsony power and binding wage floors. Extending the structural framework of Chan et al. (2024), we develop a dynamic model in which firms face upward-sloping labor supply and heterogeneous, industry-level wage floors -- reflecting collective bargaining or minimum wage policies -- that can bind asymmetrically across sectors. Work in progress.<br><br>

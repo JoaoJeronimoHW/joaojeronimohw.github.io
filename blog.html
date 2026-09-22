@@ -2,15 +2,72 @@
 layout: default
 title: Blog
 permalink: /blog/
+page_layout: page-layout-full
 ---
 
-<h1 class="page-heading">Blog</h1>
+<div id="margin-sidebar" class="sidebar margin-sidebar">
+  <h5 class="listing-category-title">Categories</h5>
+  <div class="listing-category-list">
+    <div class="category active" data-category="">All <span class="category-count">({{ site.posts.size }})</span></div>
+    {%- assign categories = site.categories | sort -%}
+    {%- for category in categories -%}
+    <div class="category" data-category="{{ category[0] }}">{{ category[0] }} <span class="category-count">({{ category[1].size }})</span></div>
+    {%- endfor -%}
+  </div>
+</div>
 
-{% for post in site.posts %}
-  <article class="post-preview">
-    <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
-    <p class="post-meta">{{ post.date | date: "%B %d, %Y" }}</p>
-    <div class="post-excerpt">{{ post.excerpt | strip_html | truncatewords: 60 }}</div>
-    <a href="{{ post.url }}" class="read-more">Read more &rarr;</a>
-  </article>
-{% endfor %}
+<main class="content column-page-left" id="document-content">
+  <header class="page-header">
+    <h1 class="title">{{ page.title }}</h1>
+  </header>
+
+  <div id="blog-listing">
+    {%- assign posts_by_year = site.posts | group_by_exp: "post", "post.date | date: '%Y'" -%}
+    {%- for year in posts_by_year -%}
+    <section class="listing-section">
+      <h2 class="listing-year">{{ year.name }}</h2>
+      <div class="listing">
+        {%- for post in year.items -%}
+        <div class="quarto-post image-right" data-categories="{{ post.categories | join: ',' }}">
+
+          <div class="thumbnail">
+            <a href="{{ post.url | relative_url }}">
+              <img loading="lazy" src="{{ post.image | default: '/assets/images/me.jpg' | relative_url }}" class="thumbnail-image" alt="">
+            </a>
+          </div>
+
+          <div class="body">
+            <h3 class="listing-title">
+              <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+            </h3>
+            {%- if post.subtitle -%}
+            <div class="listing-subtitle">
+              <a href="{{ post.url | relative_url }}">{{ post.subtitle }}</a>
+            </div>
+            {%- endif -%}
+            {%- if post.categories and post.categories.size > 0 -%}
+            <div class="listing-categories">
+              {%- for category in post.categories -%}
+              <div class="listing-category" data-category="{{ category }}">{{ category }}</div>
+              {%- endfor -%}
+            </div>
+            {%- endif -%}
+            <div class="listing-description">
+              <a href="{{ post.url | relative_url }}">{{ post.description | default: post.excerpt | strip_html | normalize_whitespace | truncatewords: 60 }}</a>
+            </div>
+          </div>
+
+          <div class="metadata">
+            <a href="{{ post.url | relative_url }}">
+              <div class="listing-date">{{ post.date | date: "%B %-d, %Y" }}</div>
+            </a>
+          </div>
+
+        </div>
+        {%- endfor -%}
+      </div>
+    </section>
+    {%- endfor -%}
+    <div class="listing-no-matching">No matching items</div>
+  </div>
+</main>

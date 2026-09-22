@@ -2,8 +2,10 @@
 layout: post
 title: "LASSO Cannot Be Trusted for Variable Selection. Here Is the Geometry That Explains Why."
 date: 2026-04-27 10:00:00 +0100
-author: João Jerónimo
-categories: jekyll update
+author: Joao Jeronimo
+categories: [causal inference, machine learning, regression]
+image: /assets/images/selection_heatmap.png
+description: "L1 regularisation is excellent at predicting y-hat in sparse, high-dimensional problems, but it will not select the same predictors twice across partitions of the same dataset. This post reconstructs the Mullainathan and Spiess (2017) demonstration and makes the geometry of that instability visible in the hyperparameter space."
 ---
 
 I have been spending the last two months creating econometrics and data science tasks to train AI models for OpenAI. The work is very interesting and a wonderful opportunity to dive deeper into certain methods and areas in the literature that I haven't had as much opportunity to explore during my PhD. I have been especially interested in the intersection between traditional econometrics and machine learning, and what that intersection means for causal inference.
